@@ -86,19 +86,59 @@ END;
 $$ LANGUAGE plpgsql;
 -- 3.2 System Defined Aggregate Functions
 -- Task – Create a function that returns the average total of all invoices
+CREATE OR REPLACE FUNCTION get_avg_total()
+RETURNS NUMERIC(10,2) AS $$
+BEGIN
+RETURN AVG(total) FROM invoice;
+END;
+$$ LANGUAGE plpgsql;
 -- Task – Create a function that returns the most expensive track
+CREATE OR REPLACE FUNCTION most_expensive_track()
+RETURNS NUMERIC(10,2) AS $$
+BEGIN
+	RETURN MAX(unitprice) FROM track;
+END;
+$$ LANGUAGE plpgsql;
 -- 3.3 User Defined Scalar Functions
 -- Task – Create a function that returns the average price of invoiceline items in the invoiceline table
-
+CREATE OR REPLACE FUNCTION avg_invoiceline_items()
+RETURNS NUMERIC(10,2) AS $$
+BEGIN
+	RETURN AVG(unitprice) FROM invoiceline;
+END;
+$$ LANGUAGE plpgsql;
 -- 3.4 User Defined Table Valued Functions
 -- Task – Create a function that returns all employees who are born after 1968.
+CREATE OR REPLACE FUNCTION born_after_1968()
+RETURNS refcursor AS $$
+DECLARE 
+	curs refcursor;
+BEGIN 
+     OPEN curs for SELECT * FROM employee WHERE birthdate > '1968-12-31 00:00:00';
+	RETURN curs;
+END;
+$$ LANGUAGE plpgsql;
 -- 4.0 Stored Procedures
 --  In this section you will be creating and executing stored procedures. You will be creating various types of stored procedures that take input and output parameters.
 -- 4.1 Basic Stored Procedure
 -- Task – Create a stored procedure that selects the first and last names of all the employees.
+CREATE OR REPLACE FUNCTION first_last_names()
+RETURNS employee.firstname , employee.lastname AS $$
+DECLARE curs CURSOR
+BEGIN 
+    RETURN firstname, lastname FROM employee;
+END;
+$$ LANGUAGE plpgsql;
 -- 4.2 Stored Procedure Input Parameters
 -- Task – Create a stored procedure that updates the personal information of an employee.
+CREATE OR REPLACE FUNCTION first_last_names()
+RETURNS employee.firstname , employee.lastname AS $$
+BEGIN 
+    UPDATE employee SET ();
+END;
+$$ LANGUAGE plpgsql;
 -- Task – Create a stored procedure that returns the managers of an employee.
+
 -- 4.3 Stored Procedure Output Parameters
 -- Task – Create a stored procedure that returns the name and company of a customer.
 -- 5.0 Transactions
