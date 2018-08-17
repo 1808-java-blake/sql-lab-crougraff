@@ -118,40 +118,57 @@ BEGIN
 	RETURN curs;
 END;
 $$ LANGUAGE plpgsql;
--- 4.0 Stored Procedures
---  In this section you will be creating and executing stored procedures. You will be creating various types of stored procedures that take input and output parameters.
--- 4.1 Basic Stored Procedure
--- Task – Create a stored procedure that selects the first and last names of all the employees.
+-- 4.0 functions
+--  In this section you will be creating and executing functions. You will be creating various types of functions that take input and output parameters.
+-- 4.1 Basic function
+-- Task – Create a function that selects the first and last names of all the employees.
 CREATE OR REPLACE FUNCTION first_last_names()
-RETURNS employee.firstname , employee.lastname AS $$
-DECLARE curs CURSOR
+RETURNS refcursor AS $$
+DECLARE curs refcursor;
 BEGIN 
-    RETURN firstname, lastname FROM employee;
+    OPEN curs for SELECT firstname, lastname FROM employee;
+    RETURN curs;
 END;
 $$ LANGUAGE plpgsql;
--- 4.2 Stored Procedure Input Parameters
--- Task – Create a stored procedure that updates the personal information of an employee.
-CREATE OR REPLACE FUNCTION first_last_names()
-RETURNS employee.firstname , employee.lastname AS $$
-BEGIN 
-    UPDATE employee SET ();
-END;
+-- 4.2 function Input Parameters
+-- Task – Create a function that updates the personal information of an employee.
+CREATE OR REPLACE FUNCTION employee_info_update(INOUT a INTEGER)
+AS $$
+BEGIN
+	UPDATE employee SET firstname = 'changed user info'
+	where employeeid = a;
+END
 $$ LANGUAGE plpgsql;
--- Task – Create a stored procedure that returns the managers of an employee.
-
--- 4.3 Stored Procedure Output Parameters
--- Task – Create a stored procedure that returns the name and company of a customer.
+-- Task – Create a function that returns the managers of an employee.
+CREATE OR REPLACE FUNCTION employee_info_update(INOUT a INTEGER)
+AS $$
+BEGIN
+	
+END
+$$ LANGUAGE plpgsql;
+-- 4.3 function Output Parameters
+-- Task – Create a function that returns the name and company of a customer.
+CREATE OR REPLACE FUNCTION employee_managers (n INTEGER) 
+ RETURNS curs refcursor AS $$ 
+BEGIN
+	OPEN curs for SELECT * employee
+		WHERE employeeid > n;
+	return curs;
+END ; 
+$$ LANGUAGE plpgsql;
 -- 5.0 Transactions
--- In this section you will be working with transactions. Transactions are usually nested within a stored procedure. You will also be working with handling errors in your SQL.
+-- In this section you will be working with transactions. Transactions are usually nested within a function. You will also be working with handling errors in your SQL.
 -- Task – Create a transaction that given a invoiceId will delete that invoice (There may be constraints that rely on this, find out how to resolve them).
 
--- Task – Create a transaction nested within a stored procedure that inserts a new record in the Customer table
+-- Task – Create a transaction nested within a function that inserts a new record in the Customer table
 
 -- 6.0 Triggers
 -- In this section you will create various kinds of triggers that work when certain DML statements are executed on a table.
 -- 6.1 AFTER/FOR
 -- Task - Create an after insert trigger on the employee table fired after a new record is inserted into the table.
+
 -- Task – Create an after update trigger on the album table that fires after a row is inserted in the table
+
 -- Task – Create an after delete trigger on the customer table that fires after a row is deleted from the table.
 
 -- 6.2 INSTEAD OF
@@ -161,20 +178,25 @@ $$ LANGUAGE plpgsql;
 -- In this section you will be working with combing various tables through the use of joins. You will work with outer, inner, right, left, cross, and self joins.
 -- 7.1 INNER
 -- Task – Create an inner join that joins customers and orders and specifies the name of the customer and the invoiceId.
-SELECT c.firstname, c.lastname, i.invoiceid  FROM customer c
-  INNER JOIN invoice i ON c.customerid = i.invoiceid;
+SELECT concat(c.firstname,concat(' ',c.lastname)) AS "Name" , i.invoiceid from customer c
+INNER JOIN invoice i ON c.customerid = i.customerid;
 -- 7.2 OUTER
 -- Task – Create an outer join that joins the customer and invoice table, specifying the CustomerId, firstname, lastname, invoiceId, and total.
-
+SELECT c.customerid, c.firstname, c.lastname, i.invoiceid, i.total FROM customer c
+FULL JOIN invoice i ON c.customerid = i.customerid;
 -- 7.3 RIGHT
 -- Task – Create a right join that joins album and artist specifying artist name and title.
-
+SELECT art.name, alb.title FROM 
+artist art RIGHT JOIN album alb
+			ON art.artistid = alb.artistid;
 -- 7.4 CROSS
 -- Task – Create a cross join that joins album and artist and sorts by artist name in ascending order.
-
+SELECT * FROM album alb CROSS JOIN artist art
+ORDER BY art.name;
 -- 7.5 SELF
 -- Task – Perform a self-join on the employee table, joining on the reportsto column.
-
+SELECT * FROM employee e1, employee e2
+WHERE e1.reportsto = e2.reportsto;
 
 
 
