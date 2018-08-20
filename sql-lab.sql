@@ -140,37 +140,93 @@ BEGIN
 END
 $$ LANGUAGE plpgsql;
 -- Task – Create a function that returns the managers of an employee.
-CREATE OR REPLACE FUNCTION employee_info_update(INOUT a INTEGER)
-AS $$
+CREATE OR REPLACE FUNCTION get_employees_managers(eid INTEGER)
+RETURNS refcursor AS $$
+DECLARE curs refcursor;
 BEGIN
-	
-END
+    OPEN curs for SELECT e2.* FROM employee e1, employee e2
+		  WHERE e1.employeeid = e2.reportsto;
+    RETURN curs;
+END;
 $$ LANGUAGE plpgsql;
 -- 4.3 function Output Parameters
 -- Task – Create a function that returns the name and company of a customer.
-CREATE OR REPLACE FUNCTION employee_managers (n INTEGER) 
- RETURNS curs refcursor AS $$ 
+CREATE OR REPLACE FUNCTION get_name_company_of_customer (cid INTEGER)
+RETURNS refcursor AS $$
+DECLARE curs refcursor;
 BEGIN
-	OPEN curs for SELECT * employee
-		WHERE employeeid > n;
-	return curs;
-END ; 
+    OPEN curs for SELECT c.firstname, c.lastname, c.company FROM customer c
+    WHERE c.customerid = cid;
+    RETURN curs;
+END;
 $$ LANGUAGE plpgsql;
 -- 5.0 Transactions
 -- In this section you will be working with transactions. Transactions are usually nested within a function. You will also be working with handling errors in your SQL.
 -- Task – Create a transaction that given a invoiceId will delete that invoice (There may be constraints that rely on this, find out how to resolve them).
-
+CREATE OR REPLACE FUNCTION delete_invoice(invID INTEGER)
+RETURNS void AS $$
+BEGIN
+DELETE FROM invoiceline
+WHERE invoiceline.invoiceid IN (SELECT invoiceid FROM invoice
+	  	WHERE invoice.invoiceid = invID);
+DELETE FROM invoice
+ WHERE invoice.invoiceid = invID;
+END;
+$$ LANGUAGE plpgsql;
 -- Task – Create a transaction nested within a function that inserts a new record in the Customer table
-
+DROP FUNCTION insert_customer();
+CREATE OR REPLACE FUNCTION insert_customer()
+RETURNS void AS $$
+BEGIN
+    INSERT INTO customer 
+        VALUES (60,'chris','rougraff','revature','address', 'city','state','country','post', 'fax', 'email', 5);
+END;
+$$ LANGUAGE plpgsql;
 -- 6.0 Triggers
 -- In this section you will create various kinds of triggers that work when certain DML statements are executed on a table.
 -- 6.1 AFTER/FOR
 -- Task - Create an after insert trigger on the employee table fired after a new record is inserted into the table.
-
+CREATE OR REPLACE FUNCTION after_insert_trigger_employee()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF(TG_OP = 'INSERT') THEN
+    --do something
+    END IF;
+ 
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER after_insert_trig
+AFTER INSERT ON employee
+FOR EACH ROW
+EXECUTE PROCEDURE after_insert_trigger_employee(); 
 -- Task – Create an after update trigger on the album table that fires after a row is inserted in the table
-
+CREATE OR REPLACE FUNCTION after_update_trigger_album()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF(TG_OP = 'UPDATE') THEN
+    --do something
+    END IF;
+ 
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER after_update_trig
+AFTER INSERT ON album
+FOR EACH ROW
+EXECUTE PROCEDURE after_update_trigger_album(); 
 -- Task – Create an after delete trigger on the customer table that fires after a row is deleted from the table.
-
+CREATE OR REPLACE FUNCTION after_delete_trigger_customer()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF(TG_OP = 'DELETE') THEN
+    --do something
+    END IF;
+ 
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER after_delete_trig
+AFTER INSERT ON customer
+FOR EACH ROW
+EXECUTE PROCEDURE after_delete_trigger_customer(); 
 -- 6.2 INSTEAD OF
 -- Task – Create an instead of trigger that restricts the deletion of any invoice that is priced over 50 dollars.
 
